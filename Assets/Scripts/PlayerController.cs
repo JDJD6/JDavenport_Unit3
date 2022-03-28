@@ -11,6 +11,13 @@ public class PlayerController : MonoBehaviour
     public bool gameOver = false;
 
     private Animator animPlayer;
+    public ParticleSystem expSystem;
+    public ParticleSystem dirtSystem;
+
+    public AudioClip jumpSound;
+    public AudioClip crashSound;
+    private AudioSource asPlayer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,19 +25,22 @@ public class PlayerController : MonoBehaviour
         Physics.gravity *= gravityModifer;
 
         animPlayer = GetComponent<Animator>();
+        asPlayer = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
     void Update()
     {
         bool spaceDown = Input.GetKeyDown(KeyCode.Space);
-        //Conditions met to jumo!
+        // Conditions met to jumo!
         if (spaceDown && onGround && !gameOver)
         {
             // Jump code
             rbPlayer.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             onGround = false;
             animPlayer.SetTrigger("Jump_trig");
+            dirtSystem.Stop();
+            asPlayer.PlayOneShot(jumpSound, 1.0f);
         }
     }
 
@@ -39,6 +49,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             onGround = true;
+            dirtSystem.Play();
         }
         // Game is over with this condition is met
         else if (collision.gameObject.CompareTag("Obstacle"))
@@ -48,6 +59,9 @@ public class PlayerController : MonoBehaviour
             gameOver = true;
             animPlayer.SetBool("Death_b", true);
             animPlayer.SetInteger("DeathType_int", 1);
+            expSystem.Play();
+            dirtSystem.Stop();
+            asPlayer.PlayOneShot(crashSound, 1.0f);
         }
     }
 }
